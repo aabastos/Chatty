@@ -1,24 +1,18 @@
 import { Request, Response } from "express";
-import { getCustomRepository } from "typeorm";
-import { SettingsRepository } from "../repositories/SettingsRepository";
+import { SettingsService } from "../services/SettingsService";
 
 class SettingsController {
     async create(request: Request, response: Response) {
         try {
             const { username, chat } = request.body;
 
-            const settingsRepository = getCustomRepository(SettingsRepository);
+            const settingsService = new SettingsService();
 
-            const settings = settingsRepository.create({
-                chat,
-                username
-            });
-
-            const create = await settingsRepository.save(settings);
+            const create = await settingsService.create({ username, chat });
 
             response.status(201).json(create);
         } catch (err) {
-            response.status(400).json({ error: 'Failed to create a setting', errorDetail: err });
+            response.status(400).json({ error: 'Failed to create a setting', errorDetail: err.message });
         }
     }
 
@@ -26,10 +20,9 @@ class SettingsController {
         try {
             const { id } = request.params;
 
-            const settingsRepository = getCustomRepository(SettingsRepository);
+            const settingsService = new SettingsService();
 
-            const setting = await settingsRepository.findOne({ id });
-            await settingsRepository.remove(setting);
+            await settingsService.remove(id);
 
             response.status(204).json({ message: 'Resource deleted successfully' });
         } catch (err) {
