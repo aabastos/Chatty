@@ -1,4 +1,5 @@
-import { getCustomRepository } from "typeorm";
+import { getCustomRepository, Repository } from "typeorm";
+import { Setting } from "../entities/Setting";
 import { SettingsRepository } from "../repositories/SettingsRepository";
 
 interface ISettingsCreate {
@@ -7,30 +8,48 @@ interface ISettingsCreate {
 }
 
 class SettingsService {
-    async create({ username, chat }: ISettingsCreate) {
-        const settingsRepository = getCustomRepository(SettingsRepository);
+    private settingsRepository: Repository<Setting>
 
-        const setting = await settingsRepository.findOne({ username });
+    constructor() {
+        this.settingsRepository = getCustomRepository(SettingsRepository);
+    }
+
+    async create({ username, chat }: ISettingsCreate) {
+        const setting = await this.settingsRepository.findOne({ username });
 
         if (setting) throw new Error('User already exists');
 
-        const settings = settingsRepository.create({
+        const settings = this.settingsRepository.create({
             chat,
             username
         });
 
-        const create = await settingsRepository.save(settings);
+        const create = await this.settingsRepository.save(settings);
 
         return create;
     }
 
     async remove(id: string) {
-        const settingsRepository = getCustomRepository(SettingsRepository);
-
-        const setting = await settingsRepository.findOne({ id });
-        await settingsRepository.remove(setting);
+        const setting = await this.settingsRepository.findOne({ id });
+        await this.settingsRepository.remove(setting);
 
         return;
+    }
+
+    async findByUserName(username: string) {
+        const setting = await this.settingsRepository.findOne({ username });
+
+        return setting;
+    }
+
+    async updateUserChat(username: string, chat: boolean) {
+        const setting = await this.settingsRepository.findOne({ username });
+
+        setting.chat = chat;
+
+        const updatedSetting = await this.settingsRepository.save(setting);
+
+        return updatedSetting;
     }
 }
 

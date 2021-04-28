@@ -26,7 +26,36 @@ class SettingsController {
 
             response.status(204).json({ message: 'Resource deleted successfully' });
         } catch (err) {
-            response.status(400).json({ error: 'Failed to delete a setting', errorDetail: err });
+            response.status(400).json({ error: 'Failed to delete a setting', errorDetail: err.message });
+        }
+    }
+
+    async findByUsername(request: Request, response: Response) {
+        try {
+            const { username } = request.params;
+
+            const settingsService = new SettingsService();
+
+            const setting = await settingsService.findByUserName(username);
+
+            response.status(200).json(setting);
+        } catch (err) {
+            response.status(400).json({ error: 'Failed to get the user\'s setting!', errorDetail: err.message });
+        }
+    }
+
+    async updateUserChat(request: Request, response: Response) {
+        try {
+            const { username } = request.params;
+            const { chat } = request.body;
+
+            const settingsService = new SettingsService();
+
+            const setting = await settingsService.updateUserChat(username, chat);
+
+            response.status(200).json(setting);
+        } catch (err) {
+            response.status(400).json({ error: 'Failed to update the user\'s setting!', errorDetail: err.message });
         }
     }
 }
